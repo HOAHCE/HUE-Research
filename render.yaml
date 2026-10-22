@@ -1,8 +1,17 @@
 # Render Blueprint: dựng web app HUE Research từ Dockerfile.
 # Dùng: https://render.com/deploy?repo=https://github.com/HOAHCE/HUE-Research  (cần tài khoản Render của bạn)
+# Hướng dẫn từng bước: docs/TRIEN-KHAI-RENDER.md
 #
-# Gói free: không có ổ đĩa bền, máy chủ ngủ sau ~15 phút không dùng, dữ liệu (tài khoản, dự án, dữ liệu đã nạp)
-# MẤT khi khởi động lại và được nạp lại từ đầu (vài phút). Muốn giữ dữ liệu: đổi plan sang starter và bỏ chú thích khối disk.
+# Gói free: không có ổ đĩa bền, máy chủ ngủ sau ~15 phút không có truy cập, và dữ liệu (tài khoản đăng nhập, dự án,
+# dữ liệu đã nạp) MẤT khi khởi động lại; dữ liệu thật được nạp lại từ đầu (vài phút). Chạy thử thì đủ; dùng thật thì
+# nâng lên gói trả phí và gắn Disk (xem hướng dẫn), hoặc bỏ chú thích khối disk bên dưới và đổi plan.
+#
+# Các biến tuỳ chọn (thêm sau ở Dashboard > service > Environment, không cần điền lúc tạo Blueprint):
+#   ANTHROPIC_API_KEY            trợ lý AI thật
+#   GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET     đăng nhập GitHub
+#   ORCID_CLIENT_ID / ORCID_CLIENT_SECRET       đăng nhập ORCID
+#   SMTP_HOST SMTP_PORT SMTP_SECURE SMTP_USER SMTP_PASS SMTP_FROM   đăng nhập bằng email
+#   ALLOWED_EMAIL_DOMAINS, ADMIN_EMAILS
 services:
   - type: web
     name: hue-research
@@ -23,26 +32,3 @@ services:
         value: "1"
       - key: BETTER_AUTH_SECRET
         generateValue: true
-      # Tuỳ chọn (điền trên bảng điều khiển Render): trợ lý AI thật, đăng nhập email/GitHub/ORCID.
-      - key: ANTHROPIC_API_KEY
-        sync: false
-      - key: SMTP_HOST
-        sync: false
-      - key: SMTP_PORT
-        sync: false
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASS
-        sync: false
-      - key: SMTP_FROM
-        sync: false
-      - key: GITHUB_CLIENT_ID
-        sync: false
-      - key: GITHUB_CLIENT_SECRET
-        sync: false
-      - key: ORCID_CLIENT_ID
-        sync: false
-      - key: ORCID_CLIENT_SECRET
-        sync: false
-      - key: ADMIN_EMAILS
-        sync: false

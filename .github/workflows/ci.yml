@@ -55,3 +55,24 @@ jobs:
           # Kiểm tra tuyến đồng bộ dữ liệu người dùng có mặt (trả 401 khi chưa đăng nhập, không phải 404).
           code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3100/api/me/data/profile)
           [ "$code" = "401" ] || { echo "::error::/api/me/data/profile trả $code, mong đợi 401"; exit 1; }
+          # Ứng dụng phải chạy bằng người dùng không đặc quyền.
+          user=$(docker exec hue sh -c 'ps -o user= -C node | head -n1' | tr -d ' ')
+          [ "$user" = "node" ] || { echo "::error::tiến trình node chạy bằng '$user', mong đợi node"; exit 1; }
+      - name: Ổ dữ liệu gắn ngoài thuộc root (như Render Disk)
+        run: |
+          sudo mkdir -p /tmp/hdata && sudo chown root:root /tmp/hdata && sudo chmod 755 /tmp/hdata
+          docker run -d --name hue2 -p 3101:3100 -e SEED_ON_START=0 -v /tmp/hdata:/data hue-research
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3101/api/providers >/dev/null; then break; fi
+            sleep 2
+            if [ "$i" = "30" ]; then
+              msg=$(docker logs hue2 2>&1 | tail -n 30 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+              echo "::error title=container với ổ root không lên::${msg}"
+              exit 1
+            fi
+          done
+          # Gọi một API ghi vào CSDL để chắc chắn tạo được tệp trong /data.
+          curl -s -o /dev/null -X POST http://localhost:3101/api/chat -H 'content-type: application/json' -d '{"messages":[{"role":"user","content":"xin chào"}]}'
+          ls -la /tmp/hdata
+          test -s /tmp/hdata/hce.db || { echo "::error::không thấy /data/hce.db"; exit 1; }
+          test -s /tmp/hdata/.auth-secret || { echo "::error::không thấy khoá bí mật tự sinh"; exit 1; }

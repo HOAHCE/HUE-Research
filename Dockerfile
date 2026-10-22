@@ -28,7 +28,7 @@ COPY --from=build /app/lib/source-ddl.mjs ./lib/source-ddl.mjs
 COPY --from=build /app/next.config.mjs ./next.config.mjs
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh && mkdir -p /data && chown -R node:node /data /app
-USER node
+# Không đặt USER: entrypoint chạy bằng root để chown thư mục dữ liệu rồi hạ xuống người dùng "node".
 VOLUME /data
 EXPOSE 3100
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]

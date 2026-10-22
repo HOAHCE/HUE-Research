@@ -4,6 +4,15 @@ set -e
 
 DB_PATH="${HCE_DB_PATH:-/data/hce.db}"
 DATA_DIR="$(dirname "$DB_PATH")"
+
+# 0) Container khởi động bằng root để sửa quyền thư mục dữ liệu (ổ đĩa gắn ngoài như Render Disk thường thuộc root),
+#    rồi chạy ứng dụng bằng người dùng "node" (không đặc quyền).
+if [ "$(id -u)" = "0" ]; then
+  mkdir -p "$DATA_DIR"
+  chown -R node:node "$DATA_DIR" 2>/dev/null || true
+  exec env HOME=/home/node setpriv --reuid=node --regid=node --init-groups "$0" "$@"
+fi
+
 mkdir -p "$DATA_DIR"
 
 # 1) Khoá bí mật cho đăng nhập: nếu chưa đặt BETTER_AUTH_SECRET thì tự sinh và lưu lại để phiên không mất sau khi khởi động lại.
