@@ -82,9 +82,36 @@ Sau khi triển khai lại: `/api/providers` vẫn có `"email":true` (email lu�
 - `ANTHROPIC_API_KEY` (khoá API của bạn; không có thì Trợ lý chạy chế độ cục bộ dựa trên từ khoá).
 - ORCID: đăng ký ứng dụng tại orcid.org/developer-tools với Redirect URI `https://<địa-chỉ>/api/auth/callback/orcid`, rồi đặt `ORCID_CLIENT_ID`, `ORCID_CLIENT_SECRET`.
 
-## 6. Cập nhật và vận hành
+## 6. Tự cập nhật dữ liệu bằng Cron Job
+
+**Vì sao thiết kế như sau.** Theo tài liệu Render, Cron Job **không truy cập được Disk** của dịch vụ khác, mà CSDL SQLite nằm trên Disk của web service. Nên Cron Job không tự đồng bộ được. Cách làm: Cron Job chỉ gọi một API của web service, và web service tự chạy các bộ đồng bộ ở bên trong (nơi sở hữu Disk). Cron chờ kết quả và **thoát lỗi nếu đồng bộ thất bại**, nên Render báo lỗi cho bạn.
+
+**Lịch (giờ UTC; Việt Nam = UTC+7):**
+- Mỗi ngày 06:00 UTC (13:00 VN): quỹ EU (`eu`).
+- Riêng Chủ nhật, chạy thêm `weekly`: CSDL Khoa học Đại học Huế, biểu mẫu, danh mục QĐ 2244, DOAJ.
+- Đổi ngày trong tuần bằng biến `WEEKLY_DAY` (0 = Chủ nhật … 6 = Thứ bảy) của Cron Job; đổi giờ bằng `schedule` trong `render.production.yaml`.
+
+**Chi phí và điều kiện.** Render tính tối thiểu 1 USD/tháng cho mỗi cron job service (theo tài liệu hôm nay), cộng web service trả phí và Disk. Cron chỉ có ý nghĩa khi web dùng Disk (gói Free mất dữ liệu mỗi lần khởi động lại).
+
+**Cách bật.** Dùng Blueprint dành cho môi trường thật (web + Disk + Cron):
+1. Dashboard → **New → Blueprint** → chọn repo `HOAHCE/HUE-Research`.
+2. Ở ô **Blueprint Path** nhập `render.production.yaml` (nút "Deploy to Render" mặc định dùng `render.yaml`, bản thử Free không có Cron).
+3. Deploy Blueprint. Sau khi web Live, mở dịch vụ **hue-sync** → **Environment**: kiểm tra `SYNC_URL` đúng địa chỉ thật của web (mặc định `https://hue-research.onrender.com`; **sửa nếu Render đặt tên khác**). `SYNC_TOKEN` được nối tự động từ web service.
+4. Thử ngay: trang **hue-sync** → **Trigger Run**. Trong **Logs** phải thấy `Kích hoạt tác vụ "eu"…`, rồi `Tác vụ "eu" kết thúc: ok`. Nếu hôm đó là Chủ nhật (UTC) sẽ chạy thêm `weekly` (vài phút, DOAJ nặng nhất).
+5. Đã dùng `render.yaml` rồi và muốn thêm Cron: nâng web lên gói trả phí + Disk như mục 2, rồi tạo thêm dịch vụ **New → Cron Job** từ cùng repo với Dockerfile Path `./Dockerfile.cron`, Schedule `0 6 * * *`, và đặt hai biến `SYNC_URL`, `SYNC_TOKEN` (giá trị lấy từ biến `SYNC_TOKEN` của web).
+
+**Lỗi thường gặp (xem Logs của hue-sync):**
+- `404: web chưa bật điểm đồng bộ…` — web chưa có `SYNC_TOKEN` hoặc `SYNC_URL` trỏ sai dịch vụ.
+- `401: chữ ký bị từ chối` — `SYNC_TOKEN` của Cron khác của web (đặt lại cho khớp), hoặc đồng hồ lệch hơn 5 phút.
+- `409: đang có tác vụ khác chạy` — bước nạp ban đầu hoặc lần chạy trước chưa xong; lần lịch sau sẽ chạy lại.
+- Một bước báo mã thoát khác 0 — xem tệp nhật ký trên web: `/data/sync-eu.log`, `/data/sync-weekly.log` (Shell của web service).
+
+**Bảo mật.** Điểm đồng bộ (`/api/admin/sync`) **tắt hẳn (404)** nếu web chưa có `SYNC_TOKEN` từ 16 ký tự trở lên. Token không bao giờ được gửi đi: mỗi yêu cầu mang chữ ký HMAC-SHA256 theo thời gian (hiệu lực 5 phút, mỗi chữ ký dùng một lần), nên gõ nhầm `SYNC_URL` sang dịch vụ lạ cũng không lộ token. Chỉ chạy các tác vụ có sẵn trong danh sách cố định (không nhận lệnh tuỳ ý), một tác vụ tại một thời điểm, cùng tác vụ cách nhau tối thiểu 10 phút.
+
+**Chưa tự cập nhật:** SJR (cần tệp CSV tải bằng trình duyệt, tải lên Disk rồi chạy `node scripts/journals.mjs sjr --file …` trong Shell của web); danh mục HĐGSNN chưa tích hợp.
+
+## 7. Vận hành khác
 
 - Mỗi lần đẩy mã lên nhánh `main`, Render tự build và triển khai lại (`autoDeploy`).
-- Cập nhật dữ liệu thật định kỳ: Dashboard → **Shell** (gói trả phí) rồi chạy `node scripts/sync-eu-funding.mjs` (quỹ EU, nên chạy hằng ngày), `node scripts/sync-hueuni.mjs`, `node scripts/sync-hce-forms.mjs`, `node scripts/journals.mjs doaj`. Chạy tự động theo lịch cần thêm một Cron Job của Render (chưa cấu hình sẵn).
-- SJR cần tệp CSV tải bằng trình duyệt; đưa lên máy chủ rồi chạy `node scripts/journals.mjs sjr --file …` (chưa có quy trình tải lên sẵn).
-- Sao lưu: tải tệp `/data/hce.db` định kỳ (SQLite) nếu dùng Disk.
+- Chạy tay một bộ đồng bộ: Dashboard → web service → **Shell** (gói trả phí), ví dụ `node scripts/sync-eu-funding.mjs`.
+- Sao lưu: tải tệp `/data/hce.db` (SQLite) định kỳ nếu dùng Disk.

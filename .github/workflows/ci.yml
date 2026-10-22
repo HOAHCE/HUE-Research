@@ -60,6 +60,22 @@ jobs:
           # (Next đổi tên tiến trình thành "next-server (vX)" nên khớp cả "node" lẫn "next-server*")
           uid=$(docker exec hue sh -c 'for d in /proc/[0-9]*; do a=$(xargs -0 -n1 < "$d/cmdline" 2>/dev/null | head -n1); case "$a" in node|next-server*) grep "^Uid:" "$d/status" | cut -f2; break;; esac; done')
           [ "$uid" = "1000" ] || { echo "::error::tiến trình ứng dụng chạy với UID '$uid', mong đợi 1000 (node)"; exit 1; }
+      - name: Cron Job kích hoạt đồng bộ qua API (ảnh Dockerfile.cron)
+        run: |
+          docker build -f Dockerfile.cron -t hue-cron .
+          docker run -d --name hue3 --network host -e PORT=3103 -e SEED_ON_START=0 \
+            -e SYNC_TOKEN=ci-test-token-0123456789abcdef -e SYNC_ALLOW_NOOP=1 hue-research
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3103/api/providers >/dev/null; then break; fi
+            sleep 2
+            if [ "$i" = "30" ]; then docker logs hue3 | tail -n 30; echo "::error::web cho cron không lên"; exit 1; fi
+          done
+          # Cron chạy tác vụ giả thành công => thoát 0
+          docker run --rm --network host -e SYNC_URL=http://localhost:3103 -e SYNC_TOKEN=ci-test-token-0123456789abcdef hue-cron node cron-trigger.mjs noop
+          # Sai token => thoát khác 0 (mong đợi lỗi)
+          if docker run --rm --network host -e SYNC_URL=http://localhost:3103 -e SYNC_TOKEN=wrong-token-0123456789abcdef hue-cron node cron-trigger.mjs noop-fail; then
+            echo "::error::token sai nhưng cron vẫn thành công"; exit 1
+          fi
       - name: Ổ dữ liệu gắn ngoài thuộc root (như Render Disk)
         run: |
           sudo mkdir -p /tmp/hdata && sudo chown root:root /tmp/hdata && sudo chmod 755 /tmp/hdata

@@ -39,6 +39,15 @@ db.exec(`
     action TEXT NOT NULL,
     detail TEXT
   );
+  CREATE TABLE IF NOT EXISTS job_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    job TEXT NOT NULL,
+    started_at INTEGER NOT NULL,
+    finished_at INTEGER,
+    status TEXT NOT NULL,
+    steps TEXT NOT NULL DEFAULT '[]',
+    note TEXT
+  );
 `);
 
 export function audit(userId: string | null, action: string, detail?: string) {

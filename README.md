@@ -13,7 +13,7 @@ GitHub chỉ lưu mã nguồn, **không chạy được** ứng dụng này (c�
 | Cách | Cần gì | Liên kết / lệnh |
 |---|---|---|
 | **GitHub Codespaces** (nhanh nhất, chạy trên đám mây của GitHub) | Tài khoản GitHub | [Mở Codespace](https://codespaces.new/HOAHCE/HUE-Research?quickstart=1) → đợi cài đặt → cổng `3100` tự mở. Dữ liệu thật nạp nền vài phút (`tail -f hce-research/data/seed.log`). Liên kết chạy ở chế độ riêng tư; muốn chia sẻ, đổi cổng 3100 sang *Public* |
-| **Render** (có địa chỉ công khai lâu dài) | Tài khoản Render; hướng dẫn từng bước và cấu hình đăng nhập: [`docs/TRIEN-KHAI-RENDER.md`](docs/TRIEN-KHAI-RENDER.md) | [Deploy to Render](https://render.com/deploy?repo=https://github.com/HOAHCE/HUE-Research) dùng `render.yaml`. Gói free không giữ dữ liệu khi khởi động lại và chặn cổng SMTP (xem hướng dẫn) |
+| **Render** (có địa chỉ công khai lâu dài) | Tài khoản Render; hướng dẫn từng bước và cấu hình đăng nhập: [`docs/TRIEN-KHAI-RENDER.md`](docs/TRIEN-KHAI-RENDER.md) | [Deploy to Render](https://render.com/deploy?repo=https://github.com/HOAHCE/HUE-Research) dùng `render.yaml`. Gói free không giữ dữ liệu khi khởi động lại và chặn cổng SMTP; bản dùng thật có Disk + Cron tự cập nhật dữ liệu dùng `render.production.yaml` (xem hướng dẫn) |
 | **Docker** | Docker | `docker build -t hue-research .` rồi `docker run -p 3100:3100 -v hue-data:/data hue-research` → http://localhost:3100 |
 | **Máy cục bộ** | Node.js 22.19+ / 24 | `cd hce-research && npm install && cp .env.example .env.local && npm run dev` → http://localhost:3100 |
 

@@ -5,4 +5,6 @@ export async function register() {
   const { getMigrations } = await import("better-auth/db/migration");
   const { runMigrations } = await getMigrations(auth.options);
   await runMigrations();
+  const { abortStaleJobs } = await import("./lib/jobs");
+  abortStaleJobs();
 }
