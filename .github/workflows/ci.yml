@@ -56,8 +56,9 @@ jobs:
           code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3100/api/me/data/profile)
           [ "$code" = "401" ] || { echo "::error::/api/me/data/profile trả $code, mong đợi 401"; exit 1; }
           # Ứng dụng phải chạy bằng người dùng không đặc quyền.
-          user=$(docker exec hue sh -c 'ps -o user= -C node | head -n1' | tr -d ' ')
-          [ "$user" = "node" ] || { echo "::error::tiến trình node chạy bằng '$user', mong đợi node"; exit 1; }
+          # (image slim không có lệnh ps nên đọc UID từ /proc; "nex[t]" để lệnh sh -c này không tự khớp chính nó)
+          uid=$(docker exec hue sh -c 'for d in /proc/[0-9]*; do if grep -q "nex[t]" "$d/cmdline" 2>/dev/null; then grep "^Uid:" "$d/status" | cut -f2; break; fi; done')
+          [ "$uid" = "1000" ] || { echo "::error::tiến trình ứng dụng chạy với UID '$uid', mong đợi 1000 (node)"; exit 1; }
       - name: Ổ dữ liệu gắn ngoài thuộc root (như Render Disk)
         run: |
           sudo mkdir -p /tmp/hdata && sudo chown root:root /tmp/hdata && sudo chmod 755 /tmp/hdata
