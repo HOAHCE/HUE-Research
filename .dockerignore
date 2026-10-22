@@ -1,0 +1,13 @@
+**/node_modules
+**/.next
+**/data
+**/dist
+**/.env
+**/.env.*
+!**/.env.example
+.git
+.github
+.devcontainer
+desktop
+docs
+*.md

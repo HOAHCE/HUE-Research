@@ -1,0 +1,48 @@
+# Render Blueprint: dựng web app HUE Research từ Dockerfile.
+# Dùng: https://render.com/deploy?repo=https://github.com/HOAHCE/HUE-Research  (cần tài khoản Render của bạn)
+#
+# Gói free: không có ổ đĩa bền, máy chủ ngủ sau ~15 phút không dùng, dữ liệu (tài khoản, dự án, dữ liệu đã nạp)
+# MẤT khi khởi động lại và được nạp lại từ đầu (vài phút). Muốn giữ dữ liệu: đổi plan sang starter và bỏ chú thích khối disk.
+services:
+  - type: web
+    name: hue-research
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/providers
+    autoDeploy: true
+    # disk:
+    #   name: hue-data
+    #   mountPath: /data
+    #   sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SEED_ON_START
+        value: "1"
+      - key: BETTER_AUTH_SECRET
+        generateValue: true
+      # Tuỳ chọn (điền trên bảng điều khiển Render): trợ lý AI thật, đăng nhập email/GitHub/ORCID.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: ORCID_CLIENT_ID
+        sync: false
+      - key: ORCID_CLIENT_SECRET
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false

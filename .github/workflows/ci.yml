@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hce-research
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: hce-research/package-lock.json
+      - run: npm ci
+      - name: Kiểm tra kiểu (TypeScript)
+        run: npx tsc --noEmit
+      - name: Kiểm tra cú pháp các bộ đồng bộ
+        run: for f in scripts/*.mjs; do node --check "$f"; done
+      - name: Build
+        run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: web
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image (không đẩy)
+        run: docker build -t hue-research .
+      - name: Chạy thử container và kiểm tra API
+        run: |
+          docker run -d --name hue -p 3100:3100 -e SEED_ON_START=0 hue-research
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3100/api/providers; then echo; exit 0; fi
+            sleep 2
+          done
+          docker logs hue
+          exit 1
