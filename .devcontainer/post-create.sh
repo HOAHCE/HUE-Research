@@ -3,6 +3,11 @@
 set -e
 cd "$(dirname "$0")/../hce-research"
 
+# better-sqlite3 có thể phải biên dịch: bảo đảm có trình biên dịch.
+if ! command -v g++ >/dev/null 2>&1; then
+  sudo apt-get update && sudo apt-get install -y --no-install-recommends python3 make g++
+fi
+
 npm ci
 
 if [ ! -f .env.local ]; then
