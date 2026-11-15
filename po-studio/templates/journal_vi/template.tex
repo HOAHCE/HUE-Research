@@ -1,0 +1,78 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\usepackage[vietnamese]{babel}
+\usepackage[top=2.5cm,bottom=2.5cm,left=3cm,right=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{threeparttable}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{authblk}
+\usepackage[round,authoryear]{natbib}
+\usepackage[colorlinks=true,allcolors=blue!50!black]{hyperref}
+\usepackage[capitalize]{cleveref}
+\setstretch{1.2}
+\captionsetup{labelsep=period}
+\AtBeginDocument{\renewcommand{\refname}{Tài liệu tham khảo}\renewcommand{\abstractname}{Tóm tắt}\renewcommand{\figurename}{Hình}\renewcommand{\tablename}{Bảng}}
+\crefname{figure}{Hình}{Hình}\Crefname{figure}{Hình}{Hình}
+\crefname{table}{Bảng}{Bảng}\Crefname{table}{Bảng}{Bảng}
+\crefname{equation}{phương trình}{phương trình}\Crefname{equation}{Phương trình}{Phương trình}
+\crefname{section}{mục}{mục}\Crefname{section}{Mục}{Mục}
+
+\title{%%TITLE%%}
+%%AUTHORS%%
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+%%%%%%%%% ABSTRACT %%%%%%%%%
+Abstract here.
+%%%%%%%%% ABSTRACT %%%%%%%%%
+\end{abstract}
+
+\noindent\textbf{Từ khóa:} %%KEYWORDS%%
+
+\section{Giới thiệu}
+\label{sec:intro}
+%%%%%%%%% INTRODUCTION %%%%%%%%%
+Introduction here.
+%%%%%%%%% INTRODUCTION %%%%%%%%%
+
+\section{Tổng quan tài liệu}
+\label{sec:related_work}
+%%%%%%%%% RELATED WORK %%%%%%%%%
+Related work here.
+%%%%%%%%% RELATED WORK %%%%%%%%%
+
+\section{Dữ liệu và phương pháp nghiên cứu}
+\label{sec:method}
+%%%%%%%%% METHOD %%%%%%%%%
+Methodology here.
+%%%%%%%%% METHOD %%%%%%%%%
+
+\section{Kết quả và thảo luận}
+\label{sec:experiments}
+%%%%%%%%% EXPERIMENTS %%%%%%%%%
+Experimental setup, results, and analysis here.
+%%%%%%%%% EXPERIMENTS %%%%%%%%%
+
+\section{Kết luận}
+\label{sec:conclusion}
+%%%%%%%%% CONCLUSION %%%%%%%%%
+Conclusion here.
+%%%%%%%%% CONCLUSION %%%%%%%%%
+
+\section*{Lời cảm ơn và tuyên bố}
+%%DECLARATIONS%%
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,3 @@
+{"name": "CVPR 2025 (conference, double-blind)", "venue_type": "conference", "engine": "pdflatex",
+ "citation_style": "numeric", "anonymous": true, "author_style": "fixed", "language": "en",
+ "source": "google-research/paper-orchestra", "requires": []}

@@ -1,0 +1,3 @@
+{"name": "IEEE journal (IEEEtran, numeric)", "venue_type": "journal", "engine": "pdflatex",
+ "citation_style": "numeric", "anonymous": false, "author_style": "ieee", "language": "en",
+ "requires": ["IEEEtran.cls"]}

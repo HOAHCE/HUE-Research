@@ -1,0 +1,8 @@
+services:
+  postudio:
+    build: .
+    ports: ["8000:8000"]
+    env_file: .env          # ANTHROPIC_API_KEY=..., POSTUDIO_ACCESS_CODE=..., OPENALEX_MAILTO=...
+    volumes: ["./jobs:/data/jobs"]
+    restart: unless-stopped
+    mem_limit: 4g

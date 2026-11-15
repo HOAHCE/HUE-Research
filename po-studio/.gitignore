@@ -1,0 +1,8 @@
+__pycache__/
+runs/
+jobs/
+.env
+*.aux
+*.log
+*.blg
+*.out

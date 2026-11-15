@@ -8,6 +8,10 @@ import { FormsLookup } from "@/components/FormsLookup";
 import { FundsTabs } from "@/components/FundsTabs";
 import { JournalsTabs } from "@/components/JournalsTabs";
 import { SurveyLab } from "@/components/SurveyLab";
+import { PaperWriter } from "@/components/PaperWriter";
+
+// Công cụ cần khung rộng (biểu mẫu nhiều cột).
+const WIDE = new Set(["writium"]);
 
 export function generateStaticParams() {
   return TOOLS.map((t) => ({ alias: t.alias }));
@@ -20,7 +24,7 @@ export default async function ToolPage({ params }: { params: Promise<{ alias: st
   const stage = STAGES.find((s) => s.id === tool.stage);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5 px-4 py-8">
+    <div className={`mx-auto space-y-5 px-4 py-8 ${WIDE.has(tool.alias) ? "max-w-6xl" : "max-w-3xl"}`}>
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary"><Icon name={tool.icon} size={20} /></span>
         <div>
@@ -35,6 +39,8 @@ export default async function ToolPage({ params }: { params: Promise<{ alias: st
           <p className="mt-1 text-sm text-muted-foreground">Cần engine/dịch vụ riêng (xem tài liệu phân tích, mục 6). Trong lúc chờ, bạn có thể hỏi Trợ lý chính.</p>
           <Link href={`/chat?q=${encodeURIComponent(`Hướng dẫn ${tool.name.toLowerCase()}`)}`} className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Hỏi Trợ lý chính</Link>
         </div>
+      ) : tool.alias === "writium" ? (
+        <PaperWriter />
       ) : tool.alias === "surveylab" ? (
         <SurveyLab />
       ) : tool.alias === "journals" ? (

@@ -1,0 +1,17 @@
+anthropic>=0.40
+google-genai
+openai
+requests
+json_repair
+thefuzz
+pymupdf
+numpy
+pillow
+matplotlib
+pandas
+openpyxl
+tabulate
+python-docx
+fastapi
+uvicorn[standard]
+python-multipart

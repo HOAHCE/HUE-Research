@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PO-Studio — Viết bài báo khoa học tự động</title>
+<style>
+  :root{
+    --ink:#1d2433; --muted:#5b6475; --line:#e3e1da; --paper:#fbfaf6; --card:#ffffff;
+    --accent:#1f5f8b; --accent-2:#c2622d; --ok:#2e7d4f; --warn:#b7791f; --err:#b23b3b;
+    --serif: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 var(--sans)}
+  header{border-bottom:1px solid var(--line);background:#fff}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  .top{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .brand{font-family:var(--serif);font-size:22px;font-weight:700;letter-spacing:.2px}
+  .brand small{font:500 12px var(--sans);color:var(--muted);margin-left:8px;letter-spacing:.4px;text-transform:uppercase}
+  .lang button{border:1px solid var(--line);background:#fff;padding:5px 10px;cursor:pointer;font-weight:600;color:var(--muted)}
+  .lang button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .lang button:first-child{border-radius:6px 0 0 6px}.lang button:last-child{border-radius:0 6px 6px 0}
+  .hero{padding:34px 0 14px}
+  .hero h1{font-family:var(--serif);font-size:32px;line-height:1.2;margin:0 0 8px;font-weight:700}
+  .hero p{color:var(--muted);max-width:760px;margin:0}
+  .pipeline{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 4px}
+  .pipeline span{font-size:12px;padding:3px 9px;border-radius:99px;background:#eef3f7;color:var(--accent);font-weight:600}
+  main{display:grid;grid-template-columns:230px 1fr;gap:28px;padding:22px 0 60px}
+  nav.steps{position:sticky;top:16px;align-self:start}
+  nav.steps a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;color:var(--muted);
+    text-decoration:none;font-weight:600;cursor:pointer}
+  nav.steps a .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);font-size:12px}
+  nav.steps a.on{background:#fff;color:var(--ink);box-shadow:0 1px 0 var(--line)}
+  nav.steps a.on .n{background:var(--accent);border-color:var(--accent);color:#fff}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:26px 28px;margin-bottom:18px}
+  .card h2{font-family:var(--serif);font-size:22px;margin:0 0 4px}
+  .card .sub{color:var(--muted);margin:0 0 18px;font-size:14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+  label{display:block;font-weight:600;font-size:13.5px;margin:12px 0 5px}
+  label .req{color:var(--accent-2)} label .hint{font-weight:400;color:var(--muted)}
+  input[type=text],input[type=email],input[type=password],input[type=month],input[type=number],select,textarea{
+    width:100%;padding:9px 11px;border:1px solid #d6d3ca;border-radius:8px;font:inherit;background:#fff;color:var(--ink)}
+  textarea{min-height:92px;resize:vertical}
+  textarea.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;min-height:150px}
+  input:focus,select:focus,textarea:focus{outline:2px solid #bcd5e8;border-color:var(--accent)}
+  .row{display:flex;gap:10px;align-items:center}
+  .author{display:grid;grid-template-columns:1.1fr 1.6fr 1.2fr auto auto;gap:8px;margin-bottom:8px;align-items:center}
+  .author label{margin:0;font-weight:500;font-size:13px;display:flex;gap:4px;align-items:center;white-space:nowrap}
+  .btn{border:0;border-radius:8px;padding:10px 16px;font:600 14px var(--sans);cursor:pointer}
+  .btn.primary{background:var(--accent);color:#fff}.btn.primary:hover{background:#174a6d}
+  .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .btn.warm{background:var(--accent-2);color:#fff}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .actions{display:flex;justify-content:space-between;margin-top:22px}
+  .drop{border:1.5px dashed #cfcabd;border-radius:10px;padding:12px 14px;background:#fdfcf8}
+  .drop input{font-size:13px}
+  .figcap{display:grid;grid-template-columns:200px 1fr;gap:8px;margin-top:8px;font-size:13px;align-items:center}
+  .note{background:#f4f1e8;border-left:3px solid var(--accent-2);padding:10px 14px;border-radius:6px;font-size:13.5px;color:#4a4436}
+  .toggle{display:flex;align-items:center;gap:8px;font-weight:500;margin:10px 0}
+  .hidden{display:none!important}
+  /* progress */
+  .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}
+  .stage{border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12.5px;font-weight:600;color:var(--muted);background:#fff}
+  .stage.running{border-color:var(--accent);color:var(--accent);background:#f0f6fb}
+  .stage.done{border-color:#bfe0cc;color:var(--ok);background:#f2faf5}
+  .stage .st{display:block;font-weight:500;font-size:11.5px}
+  .log{background:#151a24;color:#d5dbe6;border-radius:10px;padding:14px;height:260px;overflow:auto;
+    font:12.5px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+  .scores{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .score{background:#f4f6f9;border-radius:8px;padding:6px 10px;font-size:12.5px}
+  .score b{font-size:15px;margin-left:4px}
+  .dl{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+  iframe{width:100%;height:760px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  ul.issues{margin:6px 0 0 18px;padding:0;font-size:13.5px} ul.issues li.e{color:var(--err)} ul.issues li.w{color:var(--warn)}
+  footer{color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding:18px 0 40px}
+  @media (max-width:860px){main{grid-template-columns:1fr}nav.steps{position:static;display:flex;overflow:auto}
+    .grid2{grid-template-columns:1fr}.author{grid-template-columns:1fr 1fr}.stages{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="brand">PO-Studio<small data-i18n="tag">Paper Orchestra · AI</small></div>
+  <div class="lang"><button id="lang-vi" class="on" onclick="setLang('vi')">VI</button><button id="lang-en" onclick="setLang('en')">EN</button></div>
+</div></header>
+
+<div class="wrap hero">
+  <h1 data-i18n="h1">Từ ý tưởng & kết quả thực nghiệm đến bản thảo bài báo hoàn chỉnh</h1>
+  <p data-i18n="lead">Nhập ý tưởng, dữ liệu, phương pháp và kết quả. Hệ thống đa tác tử (dựa trên PaperOrchestra của Google Research) lập dàn ý, tìm tài liệu đã kiểm chứng, viết từng mục, tự phản biện và chỉnh sửa, rồi xuất LaTeX + PDF theo mẫu tạp chí.</p>
+  <div class="pipeline"><span>Outline</span><span>Plotting</span><span>Literature (OpenAlex)</span><span>Section writing</span><span>Peer-review loop</span><span>Format check</span><span>Integrity report</span></div>
+</div>
+
+<div class="wrap">
+<main id="form-view">
+  <nav class="steps">
+    <a data-step="1" class="on"><span class="n">1</span><span data-i18n="s1">Tạp chí & tác giả</span></a>
+    <a data-step="2"><span class="n">2</span><span data-i18n="s2">Ý tưởng & phương pháp</span></a>
+    <a data-step="3"><span class="n">3</span><span data-i18n="s3">Dữ liệu & kết quả</span></a>
+    <a data-step="4"><span class="n">4</span><span data-i18n="s4">Cấu hình AI & gửi</span></a>
+  </nav>
+
+  <form id="f" onsubmit="return false">
+  <!-- STEP 1 -->
+  <section class="card step" data-step="1">
+    <h2 data-i18n="s1">Tạp chí & tác giả</h2>
+    <p class="sub" data-i18n="s1sub">Chọn mẫu định dạng, ngôn ngữ bài viết và thông tin tác giả.</p>
+    <div class="grid2">
+      <div><label data-i18n="template">Mẫu định dạng (template)</label><select id="template"></select></div>
+      <div><label data-i18n="venue">Tên tạp chí / hội nghị mục tiêu</label><input type="text" id="venue_name" placeholder="e.g. Expert Systems with Applications"></div>
+      <div><label data-i18n="language">Ngôn ngữ bài viết</label>
+        <select id="language"><option value="" data-i18n="lang_default">Theo mẫu</option><option value="en">English</option><option value="vi">Tiếng Việt</option></select></div>
+      <div><label data-i18n="field">Lĩnh vực nghiên cứu</label><input type="text" id="field" placeholder="financial time-series forecasting"></div>
+      <div><label><span data-i18n="title">Tiêu đề (tuỳ chọn)</span> <span class="hint" data-i18n="title_hint">— để trống để AI đề xuất</span></label><input type="text" id="title"></div>
+      <div><label data-i18n="keywords">Từ khoá (phân cách bằng ;)</label><input type="text" id="keywords"></div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="anonymous"> <span data-i18n="anon">Ẩn danh (phản biện kín hai chiều)</span></label>
+    <label data-i18n="authors">Tác giả</label>
+    <div id="authors"></div>
+    <button class="btn ghost" type="button" onclick="addAuthor()" data-i18n="add_author">+ Thêm tác giả</button>
+    <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600" data-i18n="decl">Tuyên bố (tài trợ, xung đột lợi ích, dữ liệu)</summary>
+      <div class="grid2">
+        <div><label data-i18n="funding">Tài trợ</label><input type="text" id="d_funding"></div>
+        <div><label data-i18n="conflicts">Xung đột lợi ích</label><input type="text" id="d_conflicts" placeholder="The authors declare no conflict of interest."></div>
+        <div><label data-i18n="data_avail">Tính sẵn có của dữ liệu</label><input type="text" id="d_data_availability"></div>
+        <div><label data-i18n="ack">Lời cảm ơn</label><input type="text" id="d_acknowledgements"></div>
+      </div>
+    </details>
+    <div class="actions"><button class="btn ghost" type="button" onclick="loadDemo()" data-i18n="demo">Nạp dữ liệu minh hoạ</button><button class="btn primary" type="button" onclick="go(2)" data-i18n="next">Tiếp tục →</button></div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="card step hidden" data-step="2">
+    <h2 data-i18n="s2">Ý tưởng & phương pháp</h2>
+    <p class="sub" data-i18n="s2sub">Càng cụ thể càng tốt: AI chỉ viết từ những gì bạn cung cấp, không tự bịa thêm.</p>
+    <label data-i18n="problem">Vấn đề nghiên cứu & động lực</label><textarea id="problem"></textarea>
+    <label data-i18n="rq">Câu hỏi / giả thuyết nghiên cứu</label><textarea id="research_questions"></textarea>
+    <label data-i18n="contrib">Đóng góp dự kiến</label><textarea id="contributions"></textarea>
+    <label><span data-i18n="method">Phương pháp đề xuất</span> <span class="req">*</span> <span class="hint" data-i18n="method_hint">— mô hình, công thức, quy trình, tham số</span></label><textarea id="method" style="min-height:150px"></textarea>
+    <label data-i18n="related">Ghi chú về nghiên cứu liên quan / baseline đã biết (tuỳ chọn)</label><textarea id="related_notes"></textarea>
+    <div class="actions"><button class="btn ghost" type="button" onclick="go(1)" data-i18n="back">← Quay lại</button><button class="btn primary" type="button" onclick="go(3)" data-i18n="next">Tiếp tục →</button></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="card step hidden" data-step="3">
+    <h2 data-i18n="s3">Dữ liệu & kết quả</h2>
+    <p class="note" data-i18n="s3note">Hệ thống không chạy thực nghiệm thay bạn. Hãy cung cấp kết quả thật (bảng số liệu, kiểm định); mọi con số trong bài sẽ được đối chiếu với phần này.</p>
+    <label data-i18n="data_desc">Mô tả dữ liệu (nguồn, giai đoạn, số quan sát, tiền xử lý)</label><textarea id="data_description"></textarea>
+    <div class="drop"><label style="margin-top:0" data-i18n="data_files">Tệp dữ liệu (CSV/XLSX) — tự động tính thống kê mô tả</label><input type="file" id="data_files" multiple accept=".csv,.tsv,.xlsx,.xls,.parquet"></div>
+    <label data-i18n="setup">Thiết lập thực nghiệm (chia dữ liệu, siêu tham số, chỉ số đánh giá)</label><textarea id="experimental_setup"></textarea>
+    <label><span data-i18n="results">Kết quả (bảng Markdown, chỉ số, kiểm định)</span> <span class="req">*</span></label>
+    <textarea id="results" class="mono" placeholder="| Model | RMSE | MAE |&#10;|---|---|---|&#10;| ARIMA | ... | ... |"></textarea>
+    <div class="drop" style="margin-top:8px"><label style="margin-top:0" data-i18n="result_files">Hoặc tải bảng kết quả (CSV/XLSX/MD) — giữ nguyên giá trị</label><input type="file" id="result_files" multiple accept=".csv,.tsv,.xlsx,.xls,.md,.txt"></div>
+    <label data-i18n="ablation">Phân tích bổ sung / kiểm tra độ vững / ablation</label><textarea id="ablations"></textarea>
+    <label data-i18n="discussion">Diễn giải & thảo luận của tác giả</label><textarea id="discussion_notes"></textarea>
+    <label data-i18n="limits">Hạn chế đã biết</label><textarea id="limitations" style="min-height:60px"></textarea>
+    <div class="grid2" style="margin-top:6px">
+      <div class="drop"><label style="margin-top:0" data-i18n="figs">Hình có sẵn (PNG/JPG/PDF)</label><input type="file" id="figure_files" multiple accept=".png,.jpg,.jpeg,.pdf" onchange="renderFigCaps()"><div id="figcaps"></div></div>
+      <div class="drop"><label style="margin-top:0" data-i18n="refs">Tài liệu tham khảo của bạn (.bib) — sẽ được ưu tiên trích dẫn</label><input type="file" id="reference_files" multiple accept=".bib">
+        <label data-i18n="notes">Ghi chú/bản nháp khác (PDF/DOCX/MD)</label><input type="file" id="note_files" multiple accept=".pdf,.docx,.md,.txt"></div>
+    </div>
+    <div class="actions"><button class="btn ghost" type="button" onclick="go(2)" data-i18n="back">← Quay lại</button><button class="btn primary" type="button" onclick="go(4)" data-i18n="next">Tiếp tục →</button></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="card step hidden" data-step="4">
+    <h2 data-i18n="s4">Cấu hình AI & gửi</h2>
+    <p class="sub" data-i18n="s4sub">Chọn mô hình viết và mô hình phản biện. Khoá API của bạn chỉ dùng cho phiên này, không lưu trên máy chủ.</p>
+    <div class="grid2">
+      <div><label data-i18n="writer">Mô hình viết</label><select id="writer_model"></select></div>
+      <div><label data-i18n="reviewer">Mô hình phản biện</label><select id="reviewer_model"></select></div>
+      <div><label data-i18n="apikey">Khoá API (tuỳ chọn nếu máy chủ đã có)</label><input type="password" id="api_key" autocomplete="off"></div>
+      <div id="access-wrap"><label data-i18n="access">Mã truy cập máy chủ</label><input type="password" id="access_code" autocomplete="off"></div>
+      <div><label data-i18n="cutoff">Mốc thời gian tài liệu (không trích bài sau mốc này)</label><input type="month" id="cutoff"></div>
+      <div><label data-i18n="mailto">Email liên hệ cho OpenAlex (tuỳ chọn)</label><input type="email" id="mailto"></div>
+      <div><label data-i18n="rounds">Số vòng phản biện–chỉnh sửa</label><input type="number" id="refine_rounds" min="0" max="5" value="2"></div>
+      <div><label data-i18n="maxp">Số tài liệu tham khảo tối đa</label><input type="number" id="max_papers" min="10" max="120" value="60"></div>
+    </div>
+    <label class="toggle"><input type="checkbox" id="use_plotting" checked> <span data-i18n="plot">Tự vẽ biểu đồ từ số liệu kết quả (matplotlib)</span></label>
+    <label class="toggle"><input type="checkbox" id="format_check" checked> <span data-i18n="fmt">Kiểm tra trình bày PDF bằng thị giác máy</span></label>
+    <p class="note" data-i18n="ethics">Bản thảo do AI hỗ trợ cần được tác giả đọc, kiểm chứng và chỉnh sửa trước khi nộp. Hầu hết tạp chí yêu cầu khai báo việc sử dụng AI — hệ thống tự thêm mục khai báo này.</p>
+    <div class="actions"><button class="btn ghost" type="button" onclick="go(3)" data-i18n="back">← Quay lại</button><button class="btn warm" type="button" id="submit" onclick="submitJob()" data-i18n="submit">Tạo bản thảo</button></div>
+    <div id="submit-err" style="color:var(--err);margin-top:10px"></div>
+  </section>
+  </form>
+</main>
+
+<!-- PROGRESS VIEW -->
+<section id="job-view" class="hidden" style="padding:22px 0 60px">
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div><h2 data-i18n="progress">Tiến trình</h2><p class="sub" style="margin:0"><span data-i18n="jobid">Mã công việc</span>: <code id="jid"></code> · <span id="jstate"></span></p></div>
+      <button class="btn ghost" onclick="newJob()" data-i18n="new">+ Bài mới</button>
+    </div>
+    <div class="stages" id="stages"></div>
+    <div class="log" id="log"></div>
+  </div>
+  <div class="card hidden" id="result-card">
+    <h2 data-i18n="result">Kết quả</h2>
+    <div class="scores" id="scores"></div>
+    <div id="issues"></div>
+    <div class="dl" id="downloads"></div>
+    <iframe id="pdf" title="PDF"></iframe>
+  </div>
+</section>
+</div>
+<footer><div class="wrap" data-i18n="foot">PO-Studio · dựa trên google-research/paper-orchestra (Apache-2.0). Tài liệu tham khảo lấy từ OpenAlex/Semantic Scholar; số liệu đối chiếu với nhật ký thực nghiệm. Tác giả chịu trách nhiệm cuối cùng về nội dung.</div></footer>
+
+<script>
+const I18N = {
+ en: {tag:"Paper Orchestra · AI", h1:"From idea and experimental results to a complete manuscript",
+  lead:"Enter your idea, data, method and results. A multi-agent system (built on Google Research's PaperOrchestra) plans the outline, retrieves verified literature, writes every section, reviews and revises itself, then exports LaTeX + PDF in your journal's template.",
+  s1:"Venue & authors", s2:"Idea & method", s3:"Data & results", s4:"AI settings & submit",
+  s1sub:"Choose the template, writing language and author information.", template:"Template", venue:"Target journal / conference",
+  language:"Writing language", lang_default:"Template default", field:"Research field", title:"Title (optional)", title_hint:"— leave empty for an AI suggestion",
+  keywords:"Keywords (separated by ;)", anon:"Anonymous (double-blind review)", authors:"Authors", add_author:"+ Add author",
+  decl:"Declarations (funding, conflicts, data)", funding:"Funding", conflicts:"Conflict of interest", data_avail:"Data availability", ack:"Acknowledgements",
+  demo:"Load demo input", next:"Continue →", back:"← Back", s2sub:"Be specific: the AI writes only from what you provide and never invents results.",
+  problem:"Problem statement & motivation", rq:"Research questions / hypotheses", contrib:"Intended contributions", method:"Proposed methodology",
+  method_hint:"— models, equations, procedure, parameters", related:"Notes on related work / known baselines (optional)",
+  s3note:"The system does not run experiments for you. Provide your real results (tables, tests); every number in the paper is checked against them.",
+  data_desc:"Data description (sources, period, observations, preprocessing)", data_files:"Data files (CSV/XLSX) — descriptive statistics computed automatically",
+  setup:"Experimental setup (splits, hyper-parameters, metrics)", results:"Results (Markdown tables, metrics, tests)",
+  result_files:"Or upload result tables (CSV/XLSX/MD) — values kept verbatim", ablation:"Additional analyses / robustness / ablations",
+  discussion:"Author's interpretation & discussion", limits:"Known limitations", figs:"Existing figures (PNG/JPG/PDF)",
+  refs:"Your references (.bib) — cited with priority", notes:"Other notes / drafts (PDF/DOCX/MD)",
+  s4sub:"Choose the writer and reviewer models. Your API key is used for this job only and never stored on the server.",
+  writer:"Writer model", reviewer:"Reviewer model", apikey:"API key (optional if the server has one)", access:"Server access code",
+  cutoff:"Literature cutoff (no papers after this month)", mailto:"Contact e-mail for OpenAlex (optional)", rounds:"Review–revision rounds",
+  maxp:"Maximum number of references", plot:"Draw charts from the result tables (matplotlib)", fmt:"Vision-based PDF layout check",
+  ethics:"AI-assisted drafts must be read, verified and edited by the authors before submission. Most journals require disclosure of AI use — a disclosure statement is added automatically.",
+  submit:"Generate manuscript", progress:"Progress", jobid:"Job ID", new:"+ New paper", result:"Result",
+  foot:"PO-Studio · built on google-research/paper-orchestra (Apache-2.0). References come from OpenAlex/Semantic Scholar; numbers are checked against the experimental log. Authors remain fully responsible for the content.",
+  name:"Full name", affil:"Affiliation", email:"E-mail", corr:"Corresponding", caption:"Caption for",
+  st_pending:"pending", st_running:"running…", st_done:"done", dl_pdf:"PDF", dl_zip:"Submission package (.zip)", dl_tex:"LaTeX", dl_report:"Integrity report", dl_log:"Log",
+  errors:"Needs attention", warnings:"Warnings", ok:"All integrity checks passed", required:"Please fill in the method and the results (or upload result files)."},
+ vi: {}
+};
+// Vietnamese strings are the defaults written in the HTML; capture them once.
+document.querySelectorAll('[data-i18n]').forEach(el=>{ I18N.vi[el.dataset.i18n] ??= el.textContent; });
+Object.assign(I18N.vi,{name:"Họ tên",affil:"Đơn vị",email:"Email",corr:"Liên hệ",caption:"Chú thích cho",
+  st_pending:"chờ",st_running:"đang chạy…",st_done:"xong",dl_pdf:"PDF",dl_zip:"Gói nộp bài (.zip)",dl_tex:"LaTeX",dl_report:"Báo cáo kiểm tra",dl_log:"Nhật ký",
+  errors:"Cần xử lý",warnings:"Cảnh báo",ok:"Đã qua mọi kiểm tra toàn vẹn",required:"Vui lòng nhập phương pháp và kết quả (hoặc tải tệp kết quả)."});
+let LANG = 'vi', CFG = null, POLL = null;
+const t = k => (I18N[LANG][k] ?? I18N.en[k] ?? k);
+function setLang(l){ LANG=l; document.documentElement.lang=l;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.dataset.i18n); });
+  document.getElementById('lang-vi').classList.toggle('on', l==='vi'); document.getElementById('lang-en').classList.toggle('on', l==='en');
+  renderAuthorsLabels(); renderFigCaps(); try{localStorage.setItem('po_lang',l)}catch(e){} }
+
+function go(n){ document.querySelectorAll('.step').forEach(s=>s.classList.toggle('hidden', s.dataset.step!=n));
+  document.querySelectorAll('nav.steps a').forEach(a=>a.classList.toggle('on', a.dataset.step==n)); window.scrollTo({top:0,behavior:'smooth'}); saveDraft(); }
+document.querySelectorAll('nav.steps a').forEach(a=>a.onclick=()=>go(a.dataset.step));
+
+function addAuthor(a={}){ const d=document.createElement('div'); d.className='author';
+  d.innerHTML=`<input type="text" class="a-name"><input type="text" class="a-aff"><input type="email" class="a-email">
+   <label><input type="radio" name="corr" class="a-corr"> <span class="lbl-corr"></span></label>
+   <button class="btn ghost" type="button" title="remove" onclick="this.parentElement.remove()">×</button>`;
+  d.querySelector('.a-name').value=a.name||''; d.querySelector('.a-aff').value=a.affiliation||''; d.querySelector('.a-email').value=a.email||'';
+  d.querySelector('.a-corr').checked=!!a.corresponding; document.getElementById('authors').appendChild(d); renderAuthorsLabels(); }
+function renderAuthorsLabels(){ document.querySelectorAll('.author').forEach(d=>{ d.querySelector('.a-name').placeholder=t('name');
+  d.querySelector('.a-aff').placeholder=t('affil'); d.querySelector('.a-email').placeholder=t('email'); d.querySelector('.lbl-corr').textContent=t('corr'); }); }
+function getAuthors(){ return [...document.querySelectorAll('.author')].map(d=>({name:d.querySelector('.a-name').value.trim(),
+  affiliation:d.querySelector('.a-aff').value.trim(), email:d.querySelector('.a-email').value.trim(), corresponding:d.querySelector('.a-corr').checked})).filter(a=>a.name); }
+
+function renderFigCaps(){ const box=document.getElementById('figcaps'); const prev={}; box.querySelectorAll('input').forEach(i=>prev[i.dataset.f]=i.value);
+  box.innerHTML=''; [...document.getElementById('figure_files').files].forEach(f=>{ const safe=f.name.replace(/[^A-Za-z0-9._-]/g,'_');
+   const r=document.createElement('div'); r.className='figcap'; r.innerHTML=`<span>${t('caption')} <b></b></span><input type="text">`;
+   r.querySelector('b').textContent=f.name; const i=r.querySelector('input'); i.dataset.f=safe; i.value=prev[safe]||''; box.appendChild(r); }); }
+
+const FIELDS=['venue_name','language','field','title','keywords','problem','research_questions','contributions','method','related_notes',
+  'data_description','experimental_setup','results','ablations','discussion_notes','limitations','cutoff','mailto','refine_rounds','max_papers'];
+const FORM_KEYS=['field','title','keywords','problem','research_questions','contributions','method','related_notes','data_description',
+  'experimental_setup','results','ablations','discussion_notes','limitations'];
+const val=id=>document.getElementById(id).value;
+function saveDraft(){ try{ const d={}; FIELDS.forEach(k=>d[k]=val(k)); d.authors=getAuthors(); d.template=val('template');
+  localStorage.setItem('po_draft', JSON.stringify(d)); }catch(e){} }
+function loadDraft(){ try{ const d=JSON.parse(localStorage.getItem('po_draft')||'null'); if(!d) return false;
+  FIELDS.forEach(k=>{ if(d[k]!==undefined) document.getElementById(k).value=d[k]; }); (d.authors||[]).forEach(addAuthor);
+  if(d.template) document.getElementById('template').value=d.template; return (d.authors||[]).length>0; }catch(e){ return false; } }
+
+function loadDemo(){ const D={field:"financial time-series forecasting",keywords:"cryptocurrency; Bitcoin; deep learning; LSTM; variational mode decomposition",
+  problem:"Bitcoin prices are highly volatile and non-stationary, which degrades single-model forecasters. [DEMO INPUT — replace with your own study]",
+  research_questions:"RQ1: Does VMD decomposition before LSTM forecasting reduce error versus ARIMA and a plain LSTM? RQ2: Is the improvement significant (Diebold–Mariano)?",
+  contributions:"1) A VMD-LSTM hybrid for daily Bitcoin prices. 2) Comparison with ARIMA and LSTM at 1- and 7-day horizons. 3) Significance testing.",
+  method:"Daily closes are decomposed by VMD into K=5 modes; each mode is forecast by an LSTM (2 layers, 64 units, look-back 30, Adam lr=0.001, early stopping); forecasts are summed. Baselines: ARIMA (AIC) and a single LSTM.",
+  data_description:"Daily BTC-USD close, 2018-01-01 to 2024-12-31 (2557 obs.), chronological 80/20 split, min-max scaling fitted on training data.",
+  experimental_setup:"RMSE, MAE, MAPE on the test set; horizons 1 and 7 days (direct); mean of 5 seeds; Diebold–Mariano test (squared loss).",
+  results:"SYNTHETIC DEMO NUMBERS — NOT REAL RESULTS\n| Model | Horizon | RMSE | MAE | MAPE |\n|---|---|---|---|---|\n| ARIMA | 1 | 1523.4 | 1011.7 | 2.91 |\n| LSTM | 1 | 1398.2 | 952.3 | 2.71 |\n| VMD-LSTM | 1 | 1104.6 | 768.9 | 2.18 |\n| ARIMA | 7 | 3876.5 | 2754.1 | 7.62 |\n| LSTM | 7 | 3512.8 | 2490.6 | 6.95 |\n| VMD-LSTM | 7 | 2987.3 | 2101.4 | 5.88 |\nDM (VMD-LSTM vs LSTM): -3.42 (p=0.0007) at h=1; -2.87 (p=0.0042) at h=7.",
+  ablations:"K=3 RMSE 1236.8; K=5 RMSE 1104.6; K=7 RMSE 1129.5 (h=1).", discussion_notes:"Decomposition separates trend from high-frequency noise; errors grow with horizon.",
+  limitations:"Single asset; no exogenous variables; no transaction costs."};
+  Object.entries(D).forEach(([k,v])=>document.getElementById(k).value=v);
+  document.getElementById('authors').innerHTML=''; addAuthor({name:"First Author",affiliation:"University X",email:"first@example.edu",corresponding:true}); }
+
+async function init(){ try{ const l=localStorage.getItem('po_lang'); if(l) LANG=l; }catch(e){}
+  CFG = await (await fetch('api/config')).json();
+  const sel=document.getElementById('template'); Object.entries(CFG.templates).forEach(([k,m])=>{ const o=document.createElement('option');
+   o.value=k; o.textContent=m.name+(m.available?'':' (server lacks '+m.missing.join(',')+')'); o.disabled=!m.available; sel.appendChild(o); });
+  sel.value='journal_generic'; sel.onchange=()=>{ const m=CFG.templates[sel.value]; document.getElementById('anonymous').checked=!!m.anonymous; };
+  ['writer_model','reviewer_model'].forEach(id=>{ const s=document.getElementById(id); Object.entries(CFG.models).forEach(([p,ms])=>{
+   const g=document.createElement('optgroup'); g.label=p+(CFG.server_keys[p]?' ✓':''); ms.forEach(m=>{ const o=document.createElement('option'); o.value=o.textContent=m; g.appendChild(o); }); s.appendChild(g); }); });
+  document.getElementById('writer_model').value='claude-opus-5-5'; document.getElementById('reviewer_model').value='claude-sonnet-5-5';
+  document.getElementById('access-wrap').classList.toggle('hidden', !CFG.access_code_required);
+  if(!loadDraft()) addAuthor(); setLang(LANG);
+  const m=location.hash.match(/job=([a-f0-9]{12})/); if(m) showJob(m[1]); }
+
+async function submitJob(){ const err=document.getElementById('submit-err'); err.textContent='';
+  if(!val('method').trim() || !(val('results').trim() || document.getElementById('result_files').files.length)){ err.textContent=t('required'); return; }
+  const form={}; FORM_KEYS.forEach(k=>form[k]=val(k));
+  const caps={}; document.querySelectorAll('#figcaps input').forEach(i=>caps[i.dataset.f]=i.value);
+  const payload={form, authors:getAuthors(), figure_captions:caps,
+    declarations:{funding:val('d_funding'),conflicts:val('d_conflicts'),data_availability:val('d_data_availability'),acknowledgements:val('d_acknowledgements')},
+    options:{template:val('template'),venue_name:val('venue_name'),language:val('language'),anonymous:document.getElementById('anonymous').checked,
+     writer_model:val('writer_model'),reviewer_model:val('reviewer_model'),cutoff:val('cutoff'),mailto:val('mailto'),
+     refine_rounds:+val('refine_rounds'),max_papers:+val('max_papers'),use_plotting:document.getElementById('use_plotting').checked,
+     format_check:document.getElementById('format_check').checked}};
+  const fd=new FormData(); fd.append('payload', JSON.stringify(payload)); fd.append('api_key', val('api_key'));
+  ['data_files','result_files','figure_files','reference_files','note_files'].forEach(id=>[...document.getElementById(id).files].forEach(f=>fd.append(id,f)));
+  const b=document.getElementById('submit'); b.disabled=true; saveDraft();
+  try{ const r=await fetch('api/jobs',{method:'POST',body:fd,headers:{'X-Access-Code':val('access_code')}}); const j=await r.json();
+    if(!r.ok) throw new Error(j.detail||r.statusText); location.hash='job='+j.job_id; showJob(j.job_id);
+  }catch(e){ err.textContent=e.message; } finally{ b.disabled=false; } }
+
+const STAGES=["prepare","outline","plotting","literature","sections","compile","refine","format","checks","package"];
+function showJob(id){ document.getElementById('form-view').classList.add('hidden'); document.getElementById('job-view').classList.remove('hidden');
+  document.getElementById('jid').textContent=id; clearInterval(POLL); poll(id); POLL=setInterval(()=>poll(id),3000); }
+function newJob(){ clearInterval(POLL); location.hash=''; document.getElementById('job-view').classList.add('hidden');
+  document.getElementById('form-view').classList.remove('hidden'); document.getElementById('result-card').classList.add('hidden'); go(1); }
+async function poll(id){ let s; try{ s=await (await fetch('api/jobs/'+id)).json(); }catch(e){ return; }
+  document.getElementById('jstate').textContent=s.state+(s.error?' — '+s.error:'');
+  document.getElementById('stages').innerHTML=STAGES.map(k=>{ const v=(s.stages||{})[k]||'pending';
+    return `<div class="stage ${v}">${k}<span class="st">${t('st_'+v)}</span></div>`; }).join('');
+  const log=document.getElementById('log'); const atEnd=log.scrollTop+log.clientHeight>=log.scrollHeight-20;
+  log.textContent=(s.messages||[]).join('\n'); if(atEnd) log.scrollTop=log.scrollHeight;
+  if(s.state==='done'||s.state==='failed'){ clearInterval(POLL); if(s.state==='done') renderResult(id,s); } }
+function esc(x){ const d=document.createElement('div'); d.textContent=String(x); return d.innerHTML; }
+function renderResult(id,s){ document.getElementById('result-card').classList.remove('hidden');
+  const r=s.review||{}; document.getElementById('scores').innerHTML=['Overall','Soundness','Presentation','Contribution','Originality','Clarity']
+    .filter(k=>r[k]!=null).map(k=>`<div class="score">${k}<b>${r[k]}</b>${k==='Overall'?'/10':'/4'}</div>`).join('')
+    + (s.report&&s.report.stats? Object.entries(s.report.stats).map(([k,v])=>`<div class="score">${esc(k)}<b>${esc(v)}</b></div>`).join(''):'');
+  const rep=s.report||{}; let h='';
+  if(rep.ok) h+=`<p style="color:var(--ok);font-weight:600">✓ ${t('ok')}</p>`;
+  if((rep.errors||[]).length) h+=`<b>${t('errors')}</b><ul class="issues">${rep.errors.map(e=>`<li class="e">${esc(e)}</li>`).join('')}</ul>`;
+  if((rep.warnings||[]).length) h+=`<b>${t('warnings')}</b><ul class="issues">${rep.warnings.map(e=>`<li class="w">${esc(e)}</li>`).join('')}</ul>`;
+  if((r.Weaknesses||[]).length) h+=`<details style="margin-top:8px"><summary style="cursor:pointer;font-weight:600">Reviewer weaknesses</summary><ul class="issues">${r.Weaknesses.map(e=>`<li>${esc(e)}</li>`).join('')}</ul></details>`;
+  document.getElementById('issues').innerHTML=h;
+  const base='api/jobs/'+id+'/download/';
+  document.getElementById('downloads').innerHTML=[['pdf','dl_pdf','primary'],['zip','dl_zip','warm'],['tex','dl_tex','ghost'],['report','dl_report','ghost'],['log','dl_log','ghost']]
+    .map(([k,l,c])=>`<a class="btn ${c}" href="${base+k}" style="text-decoration:none">${t(l)}</a>`).join('');
+  document.getElementById('pdf').src=base+'pdf?inline=true'; }
+window.addEventListener('hashchange',()=>{ const m=location.hash.match(/job=([a-f0-9]{12})/); if(m) showJob(m[1]); });
+init();
+</script>
+</body>
+</html>

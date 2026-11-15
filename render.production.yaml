@@ -27,6 +27,36 @@ services:
         generateValue: true
       - key: SYNC_TOKEN
         generateValue: true
+      # Viết nghiên cứu: trỏ sang dịch vụ riêng PO-Studio (mạng nội bộ Render, không công khai).
+      - key: POSTUDIO_URL
+        value: http://hue-postudio:8000
+      - key: POSTUDIO_BRIDGE_TOKEN
+        fromService:
+          type: pserv
+          name: hue-postudio
+          envVarKey: POSTUDIO_BRIDGE_TOKEN
+
+  # PO-Studio: máy viết bài báo (Python + TeX Live). Dịch vụ riêng tư, chỉ web service gọi được.
+  # Đặt thêm trong Dashboard nếu muốn dùng khoá chung: ANTHROPIC_API_KEY, POSTUDIO_ACCESS_CODE (và PAPER_SERVER_KEY=1,
+  # POSTUDIO_ACCESS_CODE giống hệt ở web service). Không có khoá chung thì người dùng nhập khoá API cá nhân.
+  - type: pserv
+    name: hue-postudio
+    runtime: docker
+    dockerfilePath: ./po-studio/Dockerfile
+    dockerContext: ./po-studio
+    plan: standard
+    autoDeploy: true
+    disk:
+      name: postudio-jobs
+      mountPath: /data
+      sizeGB: 5
+    envVars:
+      - key: POSTUDIO_BRIDGE_TOKEN
+        generateValue: true
+      - key: POSTUDIO_MAX_JOBS
+        value: "2"
+      - key: OPENALEX_MAILTO
+        value: ""
 
   # Cron Job: mỗi ngày 06:00 UTC (13:00 giờ Việt Nam) chạy "eu" (quỹ EU); riêng Chủ nhật chạy thêm "weekly"
   # (CSDL Khoa học ĐH Huế, biểu mẫu, danh mục QĐ 2244, DOAJ). Cron không truy cập được Disk của web nên chỉ gọi API

@@ -1,0 +1,16 @@
+{
+  "_note": "ILLUSTRATIVE DEMO INPUT — the numbers below are synthetic placeholders for testing the pipeline, not real results.",
+  "title": "",
+  "field": "financial time-series forecasting",
+  "keywords": "cryptocurrency; Bitcoin; deep learning; LSTM; variational mode decomposition; forecasting",
+  "problem": "Bitcoin prices are highly volatile and non-stationary, which degrades single-model forecasters. Investors and risk managers need accurate multi-horizon forecasts.",
+  "research_questions": "RQ1: Does decomposing the price series with VMD before LSTM forecasting reduce error compared with ARIMA and a plain LSTM? RQ2: Is the improvement statistically significant (Diebold-Mariano test)?",
+  "contributions": "1) A VMD-LSTM hybrid for daily Bitcoin closing prices. 2) A comparison with ARIMA and LSTM on 1-day and 7-day horizons. 3) Statistical significance testing of forecast accuracy differences.",
+  "method": "Daily close prices are decomposed by variational mode decomposition (VMD) into K=5 intrinsic modes. Each mode is forecast by a separate LSTM (2 layers, 64 units, look-back 30 days, Adam optimizer, learning rate 0.001, early stopping). Mode forecasts are summed to obtain the price forecast. Baselines: ARIMA (order selected by AIC) and a single LSTM on raw prices.",
+  "data_description": "Daily BTC-USD closing prices, 2018-01-01 to 2024-12-31 (2557 observations). Chronological split 80/20 (train/test). Min-max scaling fitted on training data only.",
+  "experimental_setup": "Metrics: RMSE, MAE, MAPE on the test set (inverse-scaled prices, USD). Horizons: 1 day and 7 days ahead (direct strategy). Five runs with different random seeds; mean reported. Diebold-Mariano test with squared-error loss.",
+  "results": "| Model | Horizon | RMSE | MAE | MAPE |\n|---|---|---|---|---|\n| ARIMA | 1 | 1523.4 | 1011.7 | 2.91 |\n| LSTM | 1 | 1398.2 | 952.3 | 2.71 |\n| VMD-LSTM | 1 | 1104.6 | 768.9 | 2.18 |\n| ARIMA | 7 | 3876.5 | 2754.1 | 7.62 |\n| LSTM | 7 | 3512.8 | 2490.6 | 6.95 |\n| VMD-LSTM | 7 | 2987.3 | 2101.4 | 5.88 |\n\nDiebold-Mariano (VMD-LSTM vs LSTM): DM = -3.42 (p = 0.0007) at horizon 1; DM = -2.87 (p = 0.0042) at horizon 7.",
+  "ablations": "Number of modes K: K=3 RMSE 1236.8; K=5 RMSE 1104.6; K=7 RMSE 1129.5 (horizon 1).",
+  "discussion_notes": "Decomposition separates the low-frequency trend from high-frequency noise; errors grow with horizon for all models.",
+  "limitations": "Single asset; no exogenous variables; transaction costs not considered."
+}

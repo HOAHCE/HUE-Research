@@ -115,3 +115,40 @@ Sau khi triển khai lại: `/api/providers` vẫn có `"email":true` (email lu�
 - Mỗi lần đẩy mã lên nhánh `main`, Render tự build và triển khai lại (`autoDeploy`).
 - Chạy tay một bộ đồng bộ: Dashboard → web service → **Shell** (gói trả phí), ví dụ `node scripts/sync-eu-funding.mjs`.
 - Sao lưu: tải tệp `/data/hce.db` (SQLite) định kỳ nếu dùng Disk.
+
+## 8. Viết nghiên cứu (/tools/writium) — dịch vụ PO-Studio
+
+Mục "Viết nghiên cứu" gồm hai phần:
+
+- **Giao diện + cầu nối** nằm trong ứng dụng web (`components/PaperWriter.tsx`, `app/api/paper/[...path]/route.ts`, `lib/paper.ts`). Trình duyệt chỉ gọi `/api/paper/*`.
+- **Máy viết bài** là dịch vụ riêng `po-studio/` (Python + TeX Live, đa tác tử dựa trên google-research/paper-orchestra). Dịch vụ này cần Docker và khoảng 2–4 GB RAM, nên **không chạy được trên hosting chỉ có Node.js**.
+
+Khi chưa đặt `POSTUDIO_URL`, trang vẫn hiển thị: người dùng soạn và lưu bản nháp trên trình duyệt, nút "Tạo bản thảo" bị khoá kèm thông báo.
+
+### Cách A — Render (blueprint `render.production.yaml`)
+
+Blueprint đã có dịch vụ riêng tư `hue-postudio` (Disk 5 GB cho bản thảo) và tự sinh `POSTUDIO_BRIDGE_TOKEN` dùng chung cho cả hai dịch vụ. Tên gói `standard` chưa thử trên tài khoản thật; đổi nếu Render báo sai.
+
+### Cách B — máy chủ bất kỳ có Docker (VPS, Cloud Server)
+
+```bash
+cd po-studio
+cp .env.example .env      # đặt POSTUDIO_BRIDGE_TOKEN=<chuỗi ngẫu nhiên dài>, OPENALEX_MAILTO, (tuỳ chọn) ANTHROPIC_API_KEY + POSTUDIO_ACCESS_CODE
+docker compose up -d --build
+```
+
+Đặt dịch vụ sau HTTPS (Nginx/Caddy) hoặc chỉ mở trong mạng nội bộ. Rồi đặt cho ứng dụng web:
+
+| Biến (ứng dụng web) | Giá trị |
+|---|---|
+| `POSTUDIO_URL` | địa chỉ dịch vụ, ví dụ `https://po.hi.hue.vn` |
+| `POSTUDIO_BRIDGE_TOKEN` | trùng giá trị bên PO-Studio |
+| `PAPER_SERVER_KEY` | `1` nếu cho người đã đăng nhập dùng khoá AI chung (khi đó đặt `POSTUDIO_ACCESS_CODE` giống hệt hai bên) |
+| `PAPER_*_DAILY_LIMIT`, `PAPER_MAX_UPLOAD_MB` | hạn mức, xem `.env.example` |
+
+### Chính sách khoá AI và quyền xem
+
+- Mặc định người dùng nhập **khoá API cá nhân** (Anthropic/Gemini/OpenAI). Khoá chỉ đi kèm tác vụ, giữ trong bộ nhớ của PO-Studio, không ghi vào CSDL hay trình duyệt.
+- Khoá chung của Trường chỉ dùng được khi đã đăng nhập, `PAPER_SERVER_KEY=1`, và tối đa `PAPER_SERVER_KEY_DAILY_LIMIT` bản thảo/ngày/tài khoản. Một bản thảo ~10 trang tốn khoảng 0,6–1,2 triệu token vào và 80–150 nghìn token ra.
+- Bản thảo tạo khi đã đăng nhập chỉ chủ tài khoản xem/tải được; bản thảo của khách xem được bằng mã công việc (12 ký tự ngẫu nhiên).
+- Mô hình `mock` (văn bản và tài liệu giả, để chạy thử) chỉ có khi đặt `POSTUDIO_ENABLE_MOCK=1` bên PO-Studio. **Không bật trên máy thật.**
