@@ -1,0 +1,32 @@
+{
+  "name": "hue-writium",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Viết nghiên cứu (hi.hue.vn/tools/writium) — ứng dụng Next.js tách riêng, chạy sau proxy của hce-start.cjs như BiblioMap.",
+  "scripts": {
+    "sync": "node scripts/sync-shared.mjs",
+    "predev": "node scripts/sync-shared.mjs",
+    "prebuild": "node scripts/sync-shared.mjs",
+    "dev": "next dev -p 3200",
+    "build": "next build",
+    "start": "next start -p 3200",
+    "package": "node scripts/package.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
+    "lucide-react": "1.61.0",
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "postcss": "8.5.31",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2"
+  },
+  "engines": { "node": ">=22.19" }
+}

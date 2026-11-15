@@ -48,6 +48,8 @@ type JobStatus = {
 type Files = { data_files: File[]; result_files: File[]; figure_files: File[]; reference_files: File[]; note_files: File[] };
 
 // ---------------------------------------------------------------- hằng số
+/** Gốc API cầu nối: "/api/paper" trong site chính; ứng dụng tách riêng (basePath /tools/writium) đặt NEXT_PUBLIC_PAPER_API. */
+const API = process.env.NEXT_PUBLIC_PAPER_API || "/api/paper";
 const DRAFT_KEY = "writium:draft:v1";
 const JOBS_KEY = "writium:jobs:v1";
 
@@ -247,14 +249,14 @@ export function PaperWriter() {
     const local = readLocal<JobRef[]>(JOBS_KEY, []);
     setJobs(local);
     setLoaded(true);
-    fetch("/api/paper/config")
+    fetch(`${API}/config`)
       .then((r) => r.json())
       .then((c: Config) => {
         setCfg(c);
         if (c.serverKey && c.loggedIn) setKeyMode("server");
       })
       .catch(() => setCfg({ enabled: false, loggedIn: false, serverKey: false, limits: { guest: 0, user: 0, serverKey: 0 }, maxUploadMb: 40 }));
-    fetch("/api/paper/jobs")
+    fetch(`${API}/jobs`)
       .then((r) => r.json())
       .then((j: { jobs?: JobRef[] }) => {
         if (!j.jobs?.length) return;
@@ -366,7 +368,7 @@ export function PaperWriter() {
 
     setSubmitting(true);
     try {
-      const r = await fetch("/api/paper/jobs", { method: "POST", body: fd });
+      const r = await fetch(`${API}/jobs`, { method: "POST", body: fd });
       const j = (await r.json()) as { job_id?: string; error?: string };
       if (!r.ok || !j.job_id) throw new Error(j.error || `Lỗi ${r.status}`);
       const ref: JobRef = { id: j.job_id, title: d.title.trim() || d.keywords.split(";")[0]?.trim() || "Bản thảo chưa đặt tên", createdAt: Date.now() };
@@ -888,7 +890,7 @@ function JobView({ id, title, onBack, onNew, serverKey }: { id: string; title?: 
     let timer: ReturnType<typeof setTimeout>;
     const poll = async () => {
       try {
-        const r = await fetch(`/api/paper/jobs/${id}`, { cache: "no-store" });
+        const r = await fetch(`${API}/jobs/${id}`, { cache: "no-store" });
         const j = (await r.json()) as JobStatus & { error?: string };
         if (!r.ok) throw new Error(j.error || `Lỗi ${r.status}`);
         if (stop) return;
@@ -917,14 +919,14 @@ function JobView({ id, title, onBack, onNew, serverKey }: { id: string; title?: 
     setResumeErr("");
     const fd = new FormData();
     if (resumeKey.trim()) fd.set("api_key", resumeKey.trim());
-    const r = await fetch(`/api/paper/jobs/${id}/resume`, { method: "POST", body: fd });
+    const r = await fetch(`${API}/jobs/${id}/resume`, { method: "POST", body: fd });
     const j = (await r.json().catch(() => ({}))) as { error?: string };
     if (!r.ok) return setResumeErr(j.error || `Lỗi ${r.status}`);
     setResumeKey("");
     setTick((t) => t + 1);
   };
 
-  const base = `/api/paper/jobs/${id}/download/`;
+  const base = `${API}/jobs/${id}/download/`;
   const review = st?.review ?? {};
   const report = st?.report;
   const stateLabel = { queued: "Đang chờ", running: "Đang viết", done: "Hoàn tất", failed: "Lỗi" } as const;

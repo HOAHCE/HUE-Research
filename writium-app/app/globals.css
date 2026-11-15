@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+/* PaperWriter.tsx chép từ hce-research (scripts/sync-shared.mjs). */
+@source "../components";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Bảng màu & khung trang giống hệt site chính hi.hue.vn (lấy từ bản đang chạy, cùng bộ biến với BiblioMap). */
+:root {
+  --background: #fff;
+  --foreground: #141c33;
+  --muted: #f2f4fa;
+  --muted-foreground: #586382;
+  --border: #dbe0ee;
+  --primary: #23389a;
+  --primary-hover: #1b2d7d;
+  --primary-foreground: #fff;
+  --accent: #e9b824;
+  --accent-foreground: #2a2205;
+  --accent-soft: #fdf4d7;
+  --card: #fff;
+  --sidebar: #f5f7fc;
+  --ring: #23389a;
+  --danger: #c0262d;
+  --success: #1b7f4b;
+  --stage-bg: #fdf1c4;
+  --stage-border: #e9b824;
+  --stage-text: #4a3a05;
+  --stage-num-bg: #e9b824;
+  --stage-num-text: #2a2205;
+  --nav-hover: #e8f1ff;
+  --nav-active: #d4e4ff;
+  --nav-active-text: #1b2d7d;
+  --nav-active-border: #23389a;
+  color-scheme: light;
+}
+.dark {
+  --background: #0b1022;
+  --foreground: #e6eaf6;
+  --muted: #151c34;
+  --muted-foreground: #97a1c2;
+  --border: #252f4f;
+  --primary: #8aa2ff;
+  --primary-hover: #a5b7ff;
+  --primary-foreground: #0a1030;
+  --accent: #f2c94c;
+  --accent-foreground: #231b02;
+  --accent-soft: #2c2610;
+  --card: #10172d;
+  --sidebar: #0e1428;
+  --ring: #8aa2ff;
+  --danger: #ff7b7b;
+  --success: #5fd59a;
+  --stage-bg: #2c2610;
+  --stage-border: #f2c94c;
+  --stage-text: #f6dc8a;
+  --stage-num-bg: #f2c94c;
+  --stage-num-text: #231b02;
+  --nav-hover: #8aa2ff24;
+  --nav-active: #8aa2ff3d;
+  --nav-active-text: #d3dcff;
+  --nav-active-border: #8aa2ff;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-card: var(--card);
+  --color-sidebar: var(--sidebar);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body { height: 100%; }
+body { margin: 0; background: var(--background); color: var(--foreground); font-family: var(--font-sans); }
+
+@layer components {
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; border-radius: 0.5rem; padding: 0.5rem 0.875rem; font-size: 0.875rem; font-weight: 500; transition: background-color 0.15s, color 0.15s, border-color 0.15s; cursor: pointer; }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+  .btn-accent { background: var(--accent); color: var(--accent-foreground); }
+  .btn-outline { border: 1px solid var(--border); background: var(--card); }
+  .btn-outline:hover:not(:disabled) { background: var(--muted); }
+  .input { width: 100%; border: 1px solid var(--border); background: var(--background); border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; outline: none; }
+  .input:focus { border-color: var(--primary); }
+  .card { border: 1px solid var(--border); background: var(--card); border-radius: 0.75rem; }
+  .chip { display: inline-flex; align-items: center; gap: 0.25rem; border-radius: 9999px; background: var(--muted); padding: 0.125rem 0.5rem; font-size: 0.75rem; }
+}
+
+/* ---- khung trang (giống BiblioMap) ---- */
+.hs-app { display: flex; flex-direction: column; height: 100dvh; }
+.hs-header { display: flex; flex: none; align-items: center; gap: 12px; height: 56px; padding: 0 16px; background: var(--background); border-bottom: 1px solid var(--border); border-top: 3px solid var(--accent); }
+.hs-brand { display: flex; align-items: center; gap: 8px; min-width: 0; text-decoration: none; }
+.hs-brand img { border-radius: 999px; flex: none; }
+.hs-brand-title { display: block; overflow: hidden; color: var(--primary); font-size: 14px; font-weight: 700; white-space: nowrap; text-overflow: ellipsis; }
+.hs-brand-sub { display: block; overflow: hidden; color: var(--muted-foreground); font-size: 11px; white-space: nowrap; text-overflow: ellipsis; }
+.hs-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.hs-icon-btn { display: inline-grid; place-items: center; width: 34px; height: 34px; color: var(--foreground); cursor: pointer; background: transparent; border: 0; border-radius: 8px; }
+.hs-icon-btn:hover { background: var(--muted); }
+.hs-login { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 6px; background: var(--primary); color: var(--primary-foreground); font-size: 13px; font-weight: 600; text-decoration: none; }
+.hs-user { display: inline-flex; align-items: center; gap: 6px; max-width: 220px; height: 34px; padding: 0 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; text-decoration: none; color: var(--foreground); }
+.hs-user span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.hs-body { display: flex; flex: 1; min-height: 0; }
+.hs-side { flex: none; width: 252px; padding: 12px 10px 24px; overflow-y: auto; font-size: 13.5px; background: var(--sidebar); border-right: 1px solid var(--border); }
+.hs-nav a { display: flex; align-items: center; gap: 8px; padding: 7px 10px; color: var(--foreground); text-decoration: none; border-radius: 8px; border-left: 3px solid transparent; }
+.hs-nav a:hover { background: var(--nav-hover); }
+.hs-nav a.hs-active { background: var(--nav-active); color: var(--nav-active-text); border-left-color: var(--nav-active-border); font-weight: 600; }
+.hs-newchat { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; padding: 9px 10px; border-radius: 8px; background: var(--primary); color: var(--primary-foreground) !important; font-weight: 600; text-decoration: none; }
+.hs-stage { display: flex; align-items: center; gap: 8px; margin: 14px 2px 4px; padding: 6px 8px; border-radius: 8px; background: var(--stage-bg); border: 1px solid var(--stage-border); color: var(--stage-text); font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
+.hs-stage-num { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 999px; background: var(--stage-num-bg); color: var(--stage-num-text); font-size: 11px; }
+.hs-sub a { padding-left: 22px; }
+.hs-soon { margin-left: auto; padding: 1px 6px; border-radius: 999px; background: var(--muted); color: var(--muted-foreground); font-size: 10px; }
+.hs-sep { height: 1px; margin: 12px 4px; background: var(--border); }
+.hs-main { flex: 1; min-width: 0; overflow-y: auto; }
+.hs-content { max-width: 1280px; margin: 0 auto; padding: 18px 16px 48px; }
+.hs-titlebar { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.hs-title { margin: 0; font-size: 20px; font-weight: 700; }
+.hs-desc { margin: 4px 0 0; color: var(--muted-foreground); font-size: 14px; }
+.hs-back { margin-left: auto; padding-top: 4px; color: var(--primary); font-size: 13px; white-space: nowrap; text-decoration: none; }
+.hs-overlay { display: none; }
+
+@media (max-width: 1023px) {
+  .hs-side { position: fixed; top: 59px; bottom: 0; left: 0; z-index: 900; transform: translateX(-100%); transition: transform 0.2s; box-shadow: 0 10px 30px -10px #0006; }
+  .hs-side.hs-open { transform: translateX(0); }
+  .hs-overlay.hs-open { display: block; position: fixed; inset: 59px 0 0; z-index: 899; background: #0a102859; }
+}
+@media (max-width: 640px) {
+  .hs-brand-sub { display: none; }
+}
+@media (min-width: 1024px) {
+  .hs-menu-btn { display: none !important; }
+}

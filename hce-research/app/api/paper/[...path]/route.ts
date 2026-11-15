@@ -136,7 +136,7 @@ export async function POST(req: Request, { params }: Ctx) {
   }
   const apiKey = String(form.get("api_key") ?? "").trim();
   const payloadText = String(form.get("payload") ?? "");
-  let payload: { form?: { title?: string; method?: string; results?: string }; options?: { template?: string; writer_model?: string } } = {};
+  let payload: { form?: { title?: string; keywords?: string; method?: string; results?: string }; options?: { template?: string; writer_model?: string } } = {};
   if (path.length === 1) {
     try {
       payload = JSON.parse(payloadText);
@@ -183,7 +183,7 @@ export async function POST(req: Request, { params }: Ctx) {
       }
       const { job_id } = (await res.json()) as { job_id: string };
       if (!JOB_ID.test(job_id)) return err("Máy chủ viết bài trả về mã không hợp lệ.", 502);
-      recordJob(job_id, session?.user.id ?? null, payload.form?.title ?? "", payload.options?.template ?? "");
+      recordJob(job_id, session?.user.id ?? null, payload.form?.title?.trim() || payload.form?.keywords?.split(";")[0]?.trim() || "", payload.options?.template ?? "");
       audit(session?.user.id ?? null, "paper.create", `${job_id}${useServerKey ? " server-key" : ""}`);
       return NextResponse.json({ job_id, owned: Boolean(session) });
     } catch {

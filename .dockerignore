@@ -12,3 +12,5 @@ docs
 .devcontainer
 **/*.md
 po-studio
+writium-app
+deploy
